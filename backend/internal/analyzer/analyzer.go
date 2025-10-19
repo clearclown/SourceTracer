@@ -28,6 +28,8 @@ type AnalyzeOptions struct {
 	MaxClaims        int
 	MaxEvidences     int
 	SearchEngines    []string
+	UseLLM           bool   // Use LLM for classification instead of rule-based
+	LLMProvider      string // LLM provider to use (openai, claude, deepseek)
 }
 
 // AnalyzeResult contains the analysis result
