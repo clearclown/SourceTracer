@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: sourcetracer-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-factcheck}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-factcheck_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-sourcetracer}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-factcheck}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sourcetracer
+
+  # Redis Cache
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: sourcetracer-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sourcetracer
+
+  # API Backend
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sourcetracer-api
+    environment:
+      # App Configuration
+      APP_ENV: ${APP_ENV:-development}
+      APP_PORT: 8080
+      APP_DEBUG: ${APP_DEBUG:-true}
+
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-factcheck}:${POSTGRES_PASSWORD:-factcheck_dev}@postgres:5432/${POSTGRES_DB:-sourcetracer}?sslmode=disable
+
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+
+      # LLM Providers (Optional)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEFAULT_LLM_PROVIDER: ${DEFAULT_LLM_PROVIDER:-claude}
+
+      # Search Providers (Optional)
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GOOGLE_CX: ${GOOGLE_CX:-}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sourcetracer
+    restart: unless-stopped
+
+  # Frontend (Flutter Web)
+  frontend:
+    build:
+      context: ./frontend/flutter_app
+      dockerfile: Dockerfile
+    container_name: sourcetracer-frontend
+    environment:
+      API_BASE_URL: http://api:8080/api/v1
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - api
+    networks:
+      - sourcetracer
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  sourcetracer:
+    driver: bridge

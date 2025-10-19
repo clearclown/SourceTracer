@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Development
+.env
+.env.local
+*.log
+
+# Testing
+coverage.txt
+*.test
+
+# Build artifacts
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation
+README.md
+docs/
