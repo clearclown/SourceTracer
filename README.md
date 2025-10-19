@@ -149,19 +149,51 @@ sourcetracer analyze --file paper.txt --output json > result.json
 sourcetracer critique --file draft.md --include-counter-evidence
 ```
 
-### API
+### API (v0.3+)
+
+**サーバー起動:**
+```bash
+cd backend
+go run cmd/api/main.go
+```
+
+**APIリクエスト例:**
 ```bash
 curl -X POST http://localhost:8080/api/v1/analyze \
   -H "Content-Type: application/json" \
   -d '{
-    "text": "Vaccines cause autism.",
+    "text": "Python is the best language. Climate change is real.",
     "options": {
-      "llm_provider": "claude",
-      "min_credibility": 0.8,
-      "search_engines": ["pubmed", "semantic_scholar", "google"],
-      "include_counter_evidence": true
+      "include_evidences": false,
+      "max_claims": 10
     }
   }'
+```
+
+**レスポンス例:**
+```json
+{
+  "success": true,
+  "data": {
+    "analysis_id": "anl_1760860015098070181",
+    "claims": [
+      {
+        "id": "clm_abc123",
+        "text": "Python is the best language.",
+        "type": "opinion",
+        "confidence": 0.9
+      },
+      {
+        "id": "clm_def456",
+        "text": "Climate change is real.",
+        "type": "fact",
+        "confidence": 0.7
+      }
+    ],
+    "overall_credibility": 0.8,
+    "processing_time_ms": 5
+  }
+}
 ```
 
 ---
@@ -219,11 +251,27 @@ go test -tags=integration ./...
 ## 🛣️ ロードマップ
 
 - [x] 基本アーキテクチャ設計
-- [ ] v0.1: CLI + 基本分析機能
-- [ ] v0.2: Web API + PostgreSQL統合
-- [ ] v0.3: Flutter UI + ダッシュボード
-- [ ] v0.4: Playwright統合（多言語検索）
-- [ ] v0.5: マルチLLMサポート
+- [x] **v0.1: CLI + 基本分析機能** ✅
+  - [x] ドメインモデル (Claim, Evidence)
+  - [x] ルールベース分類器
+  - [x] 設定管理
+  - [x] CLIツール
+- [x] **v0.2: LLM統合 + Evidence検索** ✅
+  - [x] Claude API統合
+  - [x] Semantic Scholar検索
+  - [x] Analyzer (複数クレーム抽出)
+- [x] **v0.3: Web API** ✅ (現在のバージョン)
+  - [x] Gin REST API server
+  - [x] `/api/v1/analyze` endpoint
+  - [x] CORS対応
+  - [x] エラーハンドリング
+- [ ] v0.4: データベース統合
+  - [ ] PostgreSQL統合
+  - [ ] 検索履歴保存
+  - [ ] ユーザー管理
+- [ ] v0.5: Flutter UI + ダッシュボード
+- [ ] v0.6: Playwright統合（多言語検索）
+- [ ] v0.7: マルチLLMサポート拡張
 - [ ] v1.0: OSS公開 + Podman対応
 - [ ] v1.5: GCP本番デプロイ（有料版）
 
