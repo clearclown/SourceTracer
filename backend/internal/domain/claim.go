@@ -12,9 +12,9 @@ type ClaimType int
 
 const (
 	Unclear ClaimType = iota // デフォルト: 未分類
-	Opinion                   // 意見
-	Fact                      // 事実
-	Mixed                     // 意見と事実の混在
+	Opinion                  // 意見
+	Fact                     // 事実
+	Mixed                    // 意見と事実の混在
 )
 
 // String returns the string representation of ClaimType

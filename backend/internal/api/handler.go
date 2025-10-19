@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/yourusername/sourcetracer/internal/analyzer"
 	"github.com/yourusername/sourcetracer/internal/db"
 )
@@ -68,10 +69,10 @@ func CORSMiddleware() gin.HandlerFunc {
 
 // HealthResponse represents health check response
 type HealthResponse struct {
-	Status  string                 `json:"status"`
-	Version string                 `json:"version"`
-	Time    string                 `json:"time"`
-	Services map[string]string     `json:"services,omitempty"`
+	Status   string            `json:"status"`
+	Version  string            `json:"version"`
+	Time     string            `json:"time"`
+	Services map[string]string `json:"services,omitempty"`
 }
 
 // HealthHandler handles health check
@@ -111,8 +112,8 @@ type SuccessResponse struct {
 
 // ErrorResponse represents an error API response
 type ErrorResponse struct {
-	Success bool                   `json:"success"`
-	Error   ErrorDetail            `json:"error"`
+	Success  bool                   `json:"success"`
+	Error    ErrorDetail            `json:"error"`
 	Metadata map[string]interface{} `json:"metadata"`
 }
 

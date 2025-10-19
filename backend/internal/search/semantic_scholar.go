@@ -47,17 +47,17 @@ func (s *SemanticScholarClient) buildSearchURL(query string, limit int) string {
 // SemanticScholarResponse represents the API response
 type SemanticScholarResponse struct {
 	Data []struct {
-		PaperID       string `json:"paperId"`
-		Title         string `json:"title"`
-		Authors       []struct {
+		PaperID string `json:"paperId"`
+		Title   string `json:"title"`
+		Authors []struct {
 			Name string `json:"name"`
 		} `json:"authors"`
-		URL           string `json:"url"`
-		Abstract      string `json:"abstract"`
-		CitationCount int    `json:"citationCount"`
-		Year          int    `json:"year"`
+		URL             string `json:"url"`
+		Abstract        string `json:"abstract"`
+		CitationCount   int    `json:"citationCount"`
+		Year            int    `json:"year"`
 		PublicationDate string `json:"publicationDate"`
-		Venue         string `json:"venue"`
+		Venue           string `json:"venue"`
 	} `json:"data"`
 }
 
@@ -79,10 +79,10 @@ func (s *SemanticScholarClient) Search(ctx context.Context, query string, limit 
 	if err != nil {
 		return nil, fmt.Errorf("failed to call Semantic Scholar API: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body) //nolint:errcheck
 		return nil, fmt.Errorf("Semantic Scholar API error (status %d): %s", resp.StatusCode, string(body))
 	}
 

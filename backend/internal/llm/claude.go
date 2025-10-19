@@ -66,10 +66,10 @@ func (c *ClaudeProvider) Call(ctx context.Context, prompt string) (string, error
 	if err != nil {
 		return "", fmt.Errorf("failed to call Claude API: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body) //nolint:errcheck
 		return "", fmt.Errorf("Claude API error (status %d): %s", resp.StatusCode, string(body))
 	}
 

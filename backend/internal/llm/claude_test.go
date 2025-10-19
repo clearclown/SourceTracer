@@ -45,11 +45,11 @@ func TestClaudeProvider_ParseResponse(t *testing.T) {
 	provider := NewClaudeProvider("test-key", "test-model", 4000)
 
 	tests := []struct {
-		name       string
-		response   string
-		wantType   string
-		wantConf   float64
-		wantErr    bool
+		name     string
+		response string
+		wantType string
+		wantConf float64
+		wantErr  bool
 	}{
 		{
 			name:     "valid opinion response",
@@ -108,8 +108,8 @@ func TestClaudeProvider_CallWithMock(t *testing.T) {
 func contains(s, substr string) bool {
 	return len(s) > 0 && len(substr) > 0 &&
 		(s == substr || len(s) >= len(substr) &&
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-		containsInMiddle(s, substr)))
+			(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
+				containsInMiddle(s, substr)))
 }
 
 func containsInMiddle(s, substr string) bool {

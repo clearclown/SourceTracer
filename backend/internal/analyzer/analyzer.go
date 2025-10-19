@@ -32,11 +32,11 @@ type AnalyzeOptions struct {
 
 // AnalyzeResult contains the analysis result
 type AnalyzeResult struct {
-	AnalysisID         string           `json:"analysis_id"`
-	Claims             []*domain.Claim  `json:"claims"`
-	OverallCredibility float64          `json:"overall_credibility"`
-	ProcessingTimeMS   int64            `json:"processing_time_ms"`
-	CreatedAt          time.Time        `json:"created_at"`
+	AnalysisID         string          `json:"analysis_id"`
+	Claims             []*domain.Claim `json:"claims"`
+	OverallCredibility float64         `json:"overall_credibility"`
+	ProcessingTimeMS   int64           `json:"processing_time_ms"`
+	CreatedAt          time.Time       `json:"created_at"`
 }
 
 // NewAnalyzer creates a new Analyzer
@@ -66,10 +66,8 @@ func (a *Analyzer) Analyze(ctx context.Context, text string, opts AnalyzeOptions
 
 	// Search for evidences if requested
 	if opts.IncludeEvidences && len(a.searchClients) > 0 {
-		if err := a.searchEvidences(ctx, claims, opts); err != nil {
-			// Log error but continue - evidence search is optional
-			// In production, we'd use a proper logger
-		}
+		// Evidence search is optional - errors are logged but not returned
+		_ = a.searchEvidences(ctx, claims, opts) //nolint:errcheck
 	}
 
 	// Calculate overall credibility

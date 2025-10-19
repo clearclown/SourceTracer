@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/yourusername/sourcetracer/internal/analyzer"
 	"github.com/yourusername/sourcetracer/internal/domain"
 )
@@ -49,11 +50,11 @@ func (r *Repository) SaveAnalysis(ctx context.Context, originalText string, resu
 
 	// Insert analysis record
 	data := map[string]interface{}{
-		"id":                   analysisID,
-		"original_text":        originalText,
-		"overall_credibility":  result.OverallCredibility,
-		"processing_time_ms":   result.ProcessingTimeMS,
-		"created_at":           result.CreatedAt,
+		"id":                  analysisID,
+		"original_text":       originalText,
+		"overall_credibility": result.OverallCredibility,
+		"processing_time_ms":  result.ProcessingTimeMS,
+		"created_at":          result.CreatedAt,
 	}
 
 	_, err := r.db.Insert(ctx, "analyses", data)
@@ -149,13 +150,15 @@ func (r *Repository) WithTransaction(ctx context.Context, fn func(context.Contex
 
 	defer func() {
 		if p := recover(); p != nil {
-			_ = tx.Rollback()
+			// Ignore rollback error during panic recovery
+			_ = tx.Rollback() //nolint:errcheck
 			panic(p)
 		}
 	}()
 
 	if err := fn(ctx); err != nil {
-		_ = tx.Rollback()
+		// Ignore rollback error when function fails
+		_ = tx.Rollback() //nolint:errcheck
 		return err
 	}
 
@@ -186,7 +189,11 @@ func (m *MockDB) Insert(ctx context.Context, table string, data map[string]inter
 	}
 
 	m.data[table] = append(m.data[table], data)
-	return data["id"].(string), nil
+	id, ok := data["id"].(string)
+	if !ok {
+		return "", fmt.Errorf("id is not a string")
+	}
+	return id, nil
 }
 
 // Query mock implementation
