@@ -33,6 +33,34 @@ func (ct ClaimType) String() string {
 	}
 }
 
+// MarshalJSON implements json.Marshaler for ClaimType
+func (ct ClaimType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, ct.String())), nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler for ClaimType
+func (ct *ClaimType) UnmarshalJSON(data []byte) error {
+	str := string(data)
+	// Remove quotes
+	if len(str) >= 2 && str[0] == '"' && str[len(str)-1] == '"' {
+		str = str[1 : len(str)-1]
+	}
+
+	switch str {
+	case "opinion":
+		*ct = Opinion
+	case "fact":
+		*ct = Fact
+	case "mixed":
+		*ct = Mixed
+	case "unclear":
+		*ct = Unclear
+	default:
+		*ct = Unclear
+	}
+	return nil
+}
+
 // Position represents the position of a claim in the original text
 type Position struct {
 	Start int `json:"start"`
