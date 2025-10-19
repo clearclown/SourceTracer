@@ -11,9 +11,11 @@ import (
 	"github.com/yourusername/sourcetracer/internal/api"
 	"github.com/yourusername/sourcetracer/internal/classifier"
 	"github.com/yourusername/sourcetracer/internal/config"
+	"github.com/yourusername/sourcetracer/internal/db"
+	"github.com/yourusername/sourcetracer/internal/search"
 )
 
-const version = "v0.3.0-alpha"
+const version = "v0.7.0-alpha"
 
 func main() {
 	// Load configuration
@@ -32,12 +34,46 @@ func main() {
 	log.Printf("🔌 Port: %d", cfg.AppPort)
 	log.Printf("🤖 Default LLM: %s", cfg.DefaultLLMProvider)
 
-	// Initialize components
+	// Initialize search aggregator
+	aggregator := search.NewAggregator()
+
+	// Add search clients
+	aggregator.AddClient("semantic_scholar", search.NewSemanticScholarClient(""))
+	aggregator.AddClient("arxiv", search.NewArxivClient())
+
+	// Add Google if API key provided
+	if googleKey := os.Getenv("GOOGLE_API_KEY"); googleKey != "" {
+		googleCX := os.Getenv("GOOGLE_CX")
+		if googleCX != "" {
+			aggregator.AddClient("google", search.NewGoogleClient(googleKey, googleCX))
+			log.Printf("✅ Google Custom Search enabled")
+		}
+	}
+
+	log.Printf("🔍 Search providers: semantic_scholar, arxiv")
+
+	// Initialize analyzer with aggregator
 	c := classifier.NewClassifier()
-	a := analyzer.NewAnalyzer(c, nil) // TODO: Add search clients
+	a := analyzer.NewAnalyzer(c, aggregator)
 
 	// Create API handler
 	handler := api.NewHandler(a)
+
+	// Initialize database if DATABASE_URL is provided
+	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		pgDB, err := db.NewPostgresDB(dbURL)
+		if err != nil {
+			log.Printf("⚠️  Failed to connect to PostgreSQL: %v", err)
+			log.Printf("📝 Using in-memory storage")
+		} else {
+			repo := db.NewRepository(pgDB)
+			handler.WithRepository(repo)
+			log.Printf("✅ PostgreSQL connected")
+		}
+	} else {
+		log.Printf("📝 DATABASE_URL not set, using mock database")
+	}
+
 	router := handler.SetupRouter()
 
 	// Setup graceful shutdown

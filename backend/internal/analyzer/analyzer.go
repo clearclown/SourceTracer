@@ -10,16 +10,16 @@ import (
 	"github.com/yourusername/sourcetracer/internal/domain"
 )
 
-// Analyzer analyzes text and extracts claims with evidences
-type Analyzer struct {
-	classifier    *classifier.Classifier
-	searchClients []SearchClient
+// SearchAggregator is an interface for search aggregation
+type SearchAggregator interface {
+	SearchAll(ctx context.Context, query string, maxResultsPerProvider int) ([]*domain.Evidence, error)
+	SearchWithProviders(ctx context.Context, query string, maxResultsPerProvider int, providers []string) ([]*domain.Evidence, error)
 }
 
-// SearchClient is an interface for search clients
-type SearchClient interface {
-	Search(ctx context.Context, query string, limit int) ([]*domain.Evidence, error)
-	Name() string
+// Analyzer analyzes text and extracts claims with evidences
+type Analyzer struct {
+	classifier *classifier.Classifier
+	aggregator SearchAggregator
 }
 
 // AnalyzeOptions contains options for analysis
@@ -40,10 +40,10 @@ type AnalyzeResult struct {
 }
 
 // NewAnalyzer creates a new Analyzer
-func NewAnalyzer(c *classifier.Classifier, searchClients []SearchClient) *Analyzer {
+func NewAnalyzer(c *classifier.Classifier, agg SearchAggregator) *Analyzer {
 	return &Analyzer{
-		classifier:    c,
-		searchClients: searchClients,
+		classifier: c,
+		aggregator: agg,
 	}
 }
 
@@ -65,7 +65,7 @@ func (a *Analyzer) Analyze(ctx context.Context, text string, opts AnalyzeOptions
 	}
 
 	// Search for evidences if requested
-	if opts.IncludeEvidences && len(a.searchClients) > 0 {
+	if opts.IncludeEvidences && a.aggregator != nil {
 		// Evidence search is optional - errors are logged but not returned
 		_ = a.searchEvidences(ctx, claims, opts) //nolint:errcheck
 	}
@@ -139,28 +139,39 @@ func (a *Analyzer) classifyClaims(ctx context.Context, claims []*domain.Claim) e
 
 // searchEvidences searches for evidences for each claim
 func (a *Analyzer) searchEvidences(ctx context.Context, claims []*domain.Claim, opts AnalyzeOptions) error {
+	if a.aggregator == nil {
+		return nil
+	}
+
 	for _, claim := range claims {
 		// Skip unclear claims
 		if claim.Type == domain.Unclear {
 			continue
 		}
 
-		// Search with each client
-		for _, client := range a.searchClients {
-			limit := 5
-			if opts.MaxEvidences > 0 {
-				limit = opts.MaxEvidences
-			}
+		maxResultsPerProvider := 5
+		if opts.MaxEvidences > 0 {
+			maxResultsPerProvider = opts.MaxEvidences
+		}
 
-			evidences, err := client.Search(ctx, claim.Text, limit)
-			if err != nil {
-				// Log error but continue with other clients
-				continue
-			}
+		var evidences []*domain.Evidence
+		var err error
 
-			for _, ev := range evidences {
-				claim.Evidences = append(claim.Evidences, *ev)
-			}
+		// Use specific search engines if provided
+		if len(opts.SearchEngines) > 0 {
+			evidences, err = a.aggregator.SearchWithProviders(ctx, claim.Text, maxResultsPerProvider, opts.SearchEngines)
+		} else {
+			evidences, err = a.aggregator.SearchAll(ctx, claim.Text, maxResultsPerProvider)
+		}
+
+		if err != nil {
+			// Log error but continue
+			continue
+		}
+
+		// Add evidences to claim
+		for _, ev := range evidences {
+			claim.Evidences = append(claim.Evidences, *ev)
 		}
 	}
 
@@ -184,10 +195,4 @@ func (a *Analyzer) calculateOverallCredibility(claims []*domain.Claim) float64 {
 // generateAnalysisID generates a unique analysis ID
 func generateAnalysisID() string {
 	return fmt.Sprintf("anl_%d", time.Now().UnixNano())
-}
-
-// WithSearchClient adds a search client to the analyzer
-func (a *Analyzer) WithSearchClient(client SearchClient) *Analyzer {
-	a.searchClients = append(a.searchClients, client)
-	return a
 }
