@@ -104,19 +104,4 @@ func TestClaudeProvider_CallWithMock(t *testing.T) {
 	t.Skip("Integration test - requires real API key")
 }
 
-// ヘルパー関数
-func contains(s, substr string) bool {
-	return len(s) > 0 && len(substr) > 0 &&
-		(s == substr || len(s) >= len(substr) &&
-			(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-				containsInMiddle(s, substr)))
-}
-
-func containsInMiddle(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}
+// Helper functions moved to test_helpers.go
