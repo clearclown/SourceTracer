@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -233,26 +232,4 @@ func (t *MockTransaction) Exec(ctx context.Context, query string, args ...interf
 	return nil
 }
 
-// PostgresDB implements Database interface for PostgreSQL
-type PostgresDB struct {
-	conn *sql.DB
-}
-
-// NewPostgresDB creates a new PostgreSQL database connection
-func NewPostgresDB(connString string) (*PostgresDB, error) {
-	db, err := sql.Open("postgres", connString)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	return &PostgresDB{conn: db}, nil
-}
-
-// Close closes the database connection
-func (p *PostgresDB) Close() error {
-	return p.conn.Close()
-}
+// PostgresDB implementation moved to postgres.go
