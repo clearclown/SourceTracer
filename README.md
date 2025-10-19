@@ -106,10 +106,10 @@ cp .env.example .env
 # .envを編集してAPIキーを設定
 ```
 
-3. **コンテナ起動**
+3. **コンテナ起動（Podman Compose推奨）**
 ```bash
-podman-compose up -d
-# または
+podman compose up -d
+# または Docker Composeの場合
 docker-compose up -d
 ```
 
@@ -260,20 +260,36 @@ go test -tags=integration ./...
   - [x] Claude API統合
   - [x] Semantic Scholar検索
   - [x] Analyzer (複数クレーム抽出)
-- [x] **v0.3: Web API** ✅ (現在のバージョン)
+- [x] **v0.3: Web API** ✅
   - [x] Gin REST API server
   - [x] `/api/v1/analyze` endpoint
   - [x] CORS対応
   - [x] エラーハンドリング
-- [ ] v0.4: データベース統合
-  - [ ] PostgreSQL統合
-  - [ ] 検索履歴保存
-  - [ ] ユーザー管理
-- [ ] v0.5: Flutter UI + ダッシュボード
-- [ ] v0.6: Playwright統合（多言語検索）
-- [ ] v0.7: マルチLLMサポート拡張
-- [ ] v1.0: OSS公開 + Podman対応
-- [ ] v1.5: GCP本番デプロイ（有料版）
+- [x] **v0.4-v0.5: データベース統合** ✅
+  - [x] PostgreSQL統合
+  - [x] 検索履歴保存
+  - [x] Repository pattern実装
+- [x] **v0.6: 検索プロバイダー拡張** ✅
+  - [x] arXiv検索統合
+  - [x] Google Custom Search統合
+  - [x] マルチプロバイダーアグリゲーター
+- [x] **v0.7: バックエンド完全統合** ✅
+  - [x] SearchAggregator統合
+  - [x] PostgreSQL自動接続
+  - [x] 環境変数ベース設定
+- [x] **v0.8: LLM + デプロイメント** ✅ (現在のバージョン)
+  - [x] DeepSeek LLMプロバイダー
+  - [x] Podman Compose設定
+  - [x] マルチステージDockerfile
+  - [x] 本番環境対応
+- [ ] v0.9: Flutter Web UI
+  - [ ] テキスト入力フォーム
+  - [ ] 分析結果表示
+  - [ ] 履歴ビュー
+- [ ] v1.0: OSS公開
+  - [ ] ドキュメント完成
+  - [ ] CI/CD完全自動化
+  - [ ] パフォーマンス最適化
 
 ---
 
