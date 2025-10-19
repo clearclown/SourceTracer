@@ -33,7 +33,7 @@ class SourceTracerApp extends StatelessWidget {
             centerTitle: false,
             elevation: 2,
           ),
-          cardTheme: CardTheme(
+          cardTheme: CardThemeData(
             elevation: 1,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -75,8 +75,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkHealth() async {
     setState(() => _isChecking = true);
-
-    final provider = context.read<AnalysisProvider>();
 
     try {
       // Simple health check via analyze with empty options
