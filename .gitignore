@@ -88,4 +88,8 @@ lib/generated_plugin_registrant.dart
 # Go workspace file
 go.work
 
+# Build artifacts
+bin/
+backend/bin/
+
 # End of https://www.toptal.com/developers/gitignore/api/go,flutter
