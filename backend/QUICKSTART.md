@@ -1,13 +1,16 @@
 # SourceTracer Backend - Quickstart Guide
 
-## 🎯 Current Status: v0.1.0-alpha
+## 🎯 Current Status: v0.2.0-alpha
 
 実装済み機能：
 - ✅ ドメインモデル (Claim, Evidence)
 - ✅ ルールベース分類器 (Opinion/Fact判定)
+- ✅ **Claude API統合** (LLMベース分類)
+- ✅ **Semantic Scholar統合** (学術論文検索)
+- ✅ **Analyzer** (複数クレーム抽出・分類)
 - ✅ 設定管理 (環境変数読み込み)
 - ✅ LLMプロバイダーインターフェース
-- ✅ CLIツール
+- ✅ CLIツール (v0.2)
 
 ## 🚀 クイックスタート
 
@@ -27,39 +30,54 @@ go build -o bin/sourcetracer cmd/cli/main.go
 
 出力例:
 ```
-🔍 SourceTracer CLI v0.1.0-alpha
+🔍 SourceTracer CLI v0.2.0-alpha
 📝 Environment: development
 🤖 Default LLM: claude
 
 =============================================================
-📄 Text: Climate change is accelerating faster than predicted.
+📄 Original Text: Climate change is accelerating faster than predicted.
 -------------------------------------------------------------
-📊 Type: fact
-📈 Confidence: 0.70
-💡 Reasoning: No opinion keywords found
-=============================================================
+📊 Analysis ID: anl_1760860015098070181
+⏱️  Processing Time: 0ms
+📈 Overall Credibility: 0.70
 
-✅ This appears to be a FACT.
-   Verify with reliable sources for accuracy.
+📋 Claims Found: 1
+
+Claim #1:
+  Text: Climate change is accelerating faster than predicted.
+  Type: fact
+  Confidence: 0.70
+  ✅ FACT - Verify with reliable sources
+
+=============================================================
 ```
 
 #### カスタムテキストで実行
 ```bash
-./bin/sourcetracer -text "Python is the best programming language"
+./bin/sourcetracer -text "Python is the best language. Go is faster. Rust is safer."
 ```
 
 出力例:
 ```
-=============================================================
-📄 Text: Python is the best programming language
--------------------------------------------------------------
-📊 Type: opinion
-📈 Confidence: 0.90
-💡 Reasoning: Contains opinion keyword: best
-=============================================================
+📋 Claims Found: 3
 
-✅ This appears to be an OPINION.
-   Consider providing evidence or rephrasing as fact.
+Claim #1:
+  Text: Python is the best language.
+  Type: opinion
+  Confidence: 0.90
+  ✅ OPINION - Consider providing evidence
+
+Claim #2:
+  Text: Go is faster.
+  Type: fact
+  Confidence: 0.70
+  ✅ FACT - Verify with reliable sources
+
+Claim #3:
+  Text: Rust is safer.
+  Type: fact
+  Confidence: 0.70
+  ✅ FACT - Verify with reliable sources
 ```
 
 ### 3. テスト実行
@@ -78,8 +96,10 @@ go test ./... -v
 現在のカバレッジ:
 - `classifier`: 100.0% ✅
 - `domain`: 87.5%
-- `llm`: 85.7%
+- `analyzer`: 66.1%
+- `search`: 66.7%
 - `config`: 54.5%
+- `llm`: 34.0% (統合テストは別途)
 
 ## 📝 現在の分類アルゴリズム
 
@@ -161,13 +181,30 @@ backend/
 └── bin/                  # ビルド成果物
 ```
 
-## 🔜 次のステップ (v0.2)
+## ✅ v0.2 新機能
 
-- [ ] LLMベース分類器実装 (OpenAI/Claude)
-- [ ] Evidence検索機能 (Semantic Scholar統合)
-- [ ] APIサーバー (Gin)
-- [ ] PostgreSQLスキーマ
-- [ ] E2Eテスト
+### 1. Analyzer (複数クレーム抽出)
+- 文単位でのクレーム抽出
+- 各クレームの個別分類
+- 全体的な信頼度スコア計算
+
+### 2. Claude API統合
+- プロンプトエンジニアリング
+- JSON応答パース
+- エラーハンドリング
+
+### 3. Semantic Scholar統合
+- 学術論文検索API
+- 引用数ベースの信頼度計算
+- パース・構造化
+
+## 🔜 次のステップ (v0.3)
+
+- [ ] APIサーバー (Gin framework)
+- [ ] PostgreSQL統合
+- [ ] リアルタイムLLM分類
+- [ ] 複数ソースからのエビデンス集約
+- [ ] E2E統合テスト
 
 ## 📖 参考
 
@@ -178,4 +215,4 @@ backend/
 
 ---
 
-**SourceTracer v0.1.0-alpha** - 情報源を、徹底的に追う。
+**SourceTracer v0.2.0-alpha** - 情報源を、徹底的に追う。すべての主張にエビデンスを。
