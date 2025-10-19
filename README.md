@@ -277,15 +277,18 @@ go test -tags=integration ./...
   - [x] SearchAggregator統合
   - [x] PostgreSQL自動接続
   - [x] 環境変数ベース設定
-- [x] **v0.8: LLM + デプロイメント** ✅ (現在のバージョン)
+- [x] **v0.8: LLM + デプロイメント** ✅
   - [x] DeepSeek LLMプロバイダー
   - [x] Podman Compose設定
   - [x] マルチステージDockerfile
   - [x] 本番環境対応
-- [ ] v0.9: Flutter Web UI
-  - [ ] テキスト入力フォーム
-  - [ ] 分析結果表示
-  - [ ] 履歴ビュー
+- [x] **v0.9: Flutter Web UI** ✅ (現在のバージョン)
+  - [x] テキスト入力フォーム
+  - [x] 分析結果表示
+  - [x] 履歴ビュー
+  - [x] Material Design 3対応
+  - [x] Provider状態管理
+  - [x] Docker/Nginx対応
 - [ ] v1.0: OSS公開
   - [ ] ドキュメント完成
   - [ ] CI/CD完全自動化
